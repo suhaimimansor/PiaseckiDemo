@@ -21,17 +21,29 @@ pip install libs/common-py/
 ## Usage
 
 ```python
-from piasecki_common.models import IMUReading, GPSPosition
+from piasecki_common.models import IMUReading, GPSPosition, TelemetryFrame
 
-# Create a telemetry reading
+# Create individual sensor readings
 imu = IMUReading(
     timestamp=1707900000.0,
     accel_x=0.01, accel_y=-0.02, accel_z=9.81,
     gyro_x=0.001, gyro_y=0.002, gyro_z=-0.001,
 )
 
+gps = GPSPosition(
+    timestamp=1707900000.0,
+    latitude=40.7128,
+    longitude=-74.0060,
+    altitude_msl=10.0,
+    ground_speed=25.0,
+    track=90.0,
+    hdop=1.2,
+    num_satellites=12,
+)
+
 # Serialize to JSON
 print(imu.model_dump_json())
+print(gps.model_dump_json())
 ```
 
 ## Dependencies
