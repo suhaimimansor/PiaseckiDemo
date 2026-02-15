@@ -1,0 +1,120 @@
+# =============================================================================
+# Piasecki Aerospace Skills Showcase — .gitignore
+# =============================================================================
+
+# --- Workspace / Project Management ---
+Workspace.md
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+.eggs/
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+.Python
+develop-eggs/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# --- C / C++ ---
+*.o
+*.a
+*.so
+*.dylib
+*.out
+*.dSYM/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile.cmake
+compile_commands.json
+install_manifest.txt
+CTestTestfile.cmake
+_deps/
+build/
+
+# --- IDE / Editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# --- macOS ---
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# --- Linux ---
+*~
+.fuse_hidden*
+.Trash-*
+.nfs*
+
+# --- Containers ---
+*.tar
+*.tar.gz
+
+# --- Redis ---
+dump.rdb
+
+# --- Celery ---
+celerybeat-schedule
+celerybeat.pid
+
+# --- Pytest ---
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+.tox/
+.nox/
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Environment variables ---
+.env
+.env.*
+!.env.example
+
+# --- Data files (generated) ---
+*.parquet
+*.csv
+!services/data-analysis/sample_data/
