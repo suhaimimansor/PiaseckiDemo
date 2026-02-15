@@ -108,6 +108,11 @@ piasecki-demo/
 │   ├── simulation/          # Flight simulation engine
 │   ├── data-analysis/       # Flight data processing & visualization
 │   └── hardware-integration/# Virtual serial sensor interface
+├── docs/                    # Project documentation (Markdown & PDF)
+│   ├── architecture/        # System architecture and design
+│   ├── api/                 # API reference documentation
+│   ├── guides/              # Setup, deployment, and user guides
+│   └── specs/               # Technical specifications and protocols
 ├── k8s/                     # Kubernetes deployment manifests
 ├── podman-compose.yml       # Container orchestration
 └── Makefile                 # Build, run, test, deploy targets
