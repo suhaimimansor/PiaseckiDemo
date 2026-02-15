@@ -1,0 +1,178 @@
+# =============================================================================
+# pyproject.toml — Piasecki Common Python Library
+# =============================================================================
+#
+# This file defines the build system, package metadata, and tool configuration
+# for the shared Python library used across all services in the project.
+#
+# WHY pyproject.toml?
+# -------------------
+# PEP 621 (2021) standardized Python project metadata in pyproject.toml,
+# replacing the older setup.py / setup.cfg approach. It is now the recommended
+# way to define Python packages. Key benefits:
+#   - Single file for build config, metadata, and tool settings
+#   - Declarative (no executable code like setup.py)
+#   - Supported by pip, setuptools, hatch, flit, poetry, and more
+#
+# INSTALLATION:
+# -------------------
+#   Production:   pip install libs/common-py/
+#   Development:  pip install -e libs/common-py/    (editable/symlink mode)
+#
+# The -e (editable) flag creates a symlink so changes to source files are
+# immediately reflected without reinstalling — essential during development.
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Build System
+# -----------------------------------------------------------------------------
+# Tells pip/build tools which backend to use for building this package.
+# setuptools is the most widely used and compatible build backend.
+# "wheel" is the standard binary distribution format for Python packages.
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# -----------------------------------------------------------------------------
+# Project Metadata (PEP 621)
+# -----------------------------------------------------------------------------
+# Core metadata that describes the package for pip, PyPI, and other tools.
+[project]
+name = "piasecki-common"
+version = "0.1.0"
+description = "Shared Python library for Piasecki Aerospace Demo — telemetry models, serialization, and configuration utilities"
+readme = "README.md"
+
+# Minimum Python version required. We use 3.12+ for:
+#   - Improved dataclass features
+#   - Better type hint support (PEP 695 type aliases)
+#   - Performance improvements in the interpreter
+requires-python = ">=3.12"
+
+# Author information
+authors = [
+    { name = "Suhaimi Mansor" },
+]
+
+# PyPI classifiers — not published, but good practice for documentation.
+# These categorize the package by development status, license, language, etc.
+# Full list: https://pypi.org/classifiers/
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries",
+]
+
+# -----------------------------------------------------------------------------
+# Dependencies
+# -----------------------------------------------------------------------------
+# Runtime dependencies installed automatically with `pip install`.
+# Version pinning strategy:
+#   >=X.Y    — minimum version (broad compatibility)
+#   >=X.Y,<Z — minimum + maximum (prevent breaking changes)
+#   ==X.Y.Z  — exact pin (only for reproducible builds, avoid in libraries)
+#
+# For a shared library, use >= (minimum) to give services flexibility.
+dependencies = [
+    # --- Data Models & Serialization ---
+    "pydantic>=2.0",           # Data validation & serialization (used for telemetry models)
+                                # Pydantic v2 is a major rewrite with Rust-based validation — much faster
+
+    # --- Data Formats ---
+    "pyarrow>=14.0",           # Apache Parquet read/write support
+                                # Parquet is a columnar format ideal for time-series flight data
+                                # Advantages over CSV: compressed, typed columns, fast queries
+
+    # --- Configuration ---
+    "tomli>=2.0; python_version < '3.11'",
+                                # TOML parser for Python <3.11 (built-in from 3.11+)
+                                # We include this for safety, though we target 3.12+
+
+    "pyyaml>=6.0",             # YAML parser for config files
+                                # Used by the GCS service for its configuration
+
+    # --- Logging & Utilities ---
+    "structlog>=23.0",         # Structured logging — outputs JSON-formatted logs
+                                # Critical for containerized services where logs are aggregated
+                                # by tools like Loki, ELK, or CloudWatch
+]
+
+# -----------------------------------------------------------------------------
+# Optional Dependencies
+# -----------------------------------------------------------------------------
+# Extra dependency groups installed with: pip install piasecki-common[dev]
+# Keeps the base package lightweight; dev tools only needed locally.
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",             # Test framework — the Python standard for testing
+    "pytest-cov>=4.0",         # Coverage reporting plugin for pytest
+    "ruff>=0.1.0",             # Fast Python linter & formatter (replaces flake8 + black + isort)
+                                # Written in Rust, 10-100x faster than traditional tools
+    "mypy>=1.0",               # Static type checker — catches type errors before runtime
+]
+
+# -----------------------------------------------------------------------------
+# Setuptools Package Discovery
+# -----------------------------------------------------------------------------
+# Tells setuptools where to find the Python packages to include.
+# "find:" auto-discovers packages; "where" specifies the root directory.
+[tool.setuptools.packages.find]
+where = ["."]                   # Look for packages in the current directory
+include = ["piasecki_common*"]  # Only include our package (not tests, scripts, etc.)
+
+# -----------------------------------------------------------------------------
+# Ruff — Linter & Formatter Configuration
+# -----------------------------------------------------------------------------
+# Ruff is an extremely fast Python linter written in Rust.
+# It replaces flake8, isort, pyflakes, and many other tools.
+# Docs: https://docs.astral.sh/ruff/
+[tool.ruff]
+target-version = "py312"        # Target Python version for lint rules
+line-length = 100               # Max line length (PEP 8 says 79, but 100 is common in practice)
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors (PEP 8 style violations)
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes (unused imports, undefined names, etc.)
+    "I",    # isort (import sorting and grouping)
+    "N",    # pep8-naming (naming conventions)
+    "D",    # pydocstyle (docstring conventions)
+    "UP",   # pyupgrade (modernize syntax for target Python version)
+    "B",    # flake8-bugbear (common bug patterns and design issues)
+    "SIM",  # flake8-simplify (simplifiable code patterns)
+]
+ignore = [
+    "D100",  # Missing docstring in public module (too noisy for a demo)
+    "D104",  # Missing docstring in public package
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"           # Use Google-style docstrings (Args:, Returns:, Raises:)
+
+# -----------------------------------------------------------------------------
+# Pytest Configuration
+# -----------------------------------------------------------------------------
+# pytest settings can live here instead of a separate pytest.ini or conftest.py.
+[tool.pytest.ini_options]
+testpaths = ["tests"]           # Where pytest looks for test files
+pythonpath = ["."]              # Add current dir to Python path for imports
+addopts = "-v --tb=short"      # Verbose output, short tracebacks by default
+                                # -v: show individual test names
+                                # --tb=short: compact error tracebacks
+
+# -----------------------------------------------------------------------------
+# MyPy — Static Type Checker Configuration
+# -----------------------------------------------------------------------------
+# MyPy checks type annotations at "compile time" to catch bugs early.
+# Docs: https://mypy.readthedocs.io/
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true          # Warn if a function returns Any when a type is expected
+warn_unused_configs = true      # Warn about unused [mypy] config entries
+disallow_untyped_defs = true    # Require type annotations on all function definitions
+                                # This enforces good documentation habits
