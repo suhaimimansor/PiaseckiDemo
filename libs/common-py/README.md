@@ -116,6 +116,82 @@ count = write_parquet_batched("huge_dataset.parquet", telemetry_generator())
 print(f"Wrote {count:,} records")
 ```
 
+### Configuration Loading
+
+The `config` module provides a unified interface for loading TOML, YAML, and JSON configuration files — with optional Pydantic validation.
+
+#### Loading Config Files
+
+```python
+from piasecki_common.config import load_toml, load_yaml, load_json
+
+# TOML (uses Python 3.11+ built-in tomllib)
+portal_config = load_toml("services/portal/config.toml")
+print(portal_config["service"]["name"])  # "Portal"
+
+# YAML (uses pyyaml with safe_load for security)
+gcs_config = load_yaml("services/gcs/config.yaml")
+print(gcs_config["redis"]["host"])  # "localhost"
+
+# JSON (uses Python built-in json module)
+sim_config = load_json("services/simulation/config.json")
+print(sim_config["update_rate_hz"])  # 50
+```
+
+#### Pydantic-Validated Config
+
+```python
+from pydantic import BaseModel
+from piasecki_common.config import load_toml_as, load_yaml_as
+
+class ServiceConfig(BaseModel):
+    name: str
+    port: int
+    debug: bool = False
+
+# Raises ValidationError at startup if config is invalid
+config = load_toml_as("config.toml", ServiceConfig)
+print(config.port)  # Type-safe access
+```
+
+#### Safe Nested Access & Config Merging
+
+```python
+from piasecki_common.config import get_nested, merge_configs
+
+# Safe nested access (no KeyError chains)
+config = {"database": {"connection": {"pool": {"max_size": 10}}}}
+get_nested(config, "database", "connection", "pool", "max_size")  # 10
+get_nested(config, "missing", "key", default="fallback")          # "fallback"
+
+# Deep-merge layered configs (base → env → CLI overrides)
+base = {"db": {"host": "localhost", "port": 5432}, "debug": False}
+prod = {"db": {"host": "prod-server"}, "debug": True}
+merged = merge_configs(base, prod)
+# {'db': {'host': 'prod-server', 'port': 5432}, 'debug': True}
+```
+
+## Testing
+
+```bash
+# Install dev dependencies
+pip install -e ".[dev]"
+
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=piasecki_common --cov-report=term-missing
+```
+
+**91 tests** covering models, serialization, and configuration:
+
+| Test Module | Tests | Coverage |
+|---|---|---|
+| `test_models.py` | 22 | Model validation, immutability, JSON round-trips |
+| `test_serialization.py` | 34 | JSON, JSONL, Parquet read/write, batched writes |
+| `test_config.py` | 35 | TOML/YAML/JSON loading, `get_nested`, `merge_configs` |
+
 ## Dependencies
 
 | Package | Purpose |
